@@ -29,7 +29,8 @@ mkdir -p ./{bin,dev,proc,sys,etc,usr,lib,tmp,var}
 Создаём необходимую структуру и подкидываем необходимые библиотеки вот таким однострочником:
 ```
 for i in apt ls ps mount; do which $i | xargs -I {} sh -c "sudo cp {} rootfs/bin/ && ldd {} |grep '=> /' |cut -d ' ' -f 3 | xargs -I {} sudo cp --paren
-ts {} rootfs/"; done ```
+ts {} rootfs/"; done 
+```
 
 и делаем **chroot** c последующей установкой необходимых программ
 ``` chroot ./   /bin/bash -c "apt update && apt install -y python3 pip && apt clean" ```
@@ -38,7 +39,8 @@ ts {} rootfs/"; done ```
 А всё дело в том, что Debian-бинарники завязаны на свою файловую базу. 
 apt и dpkg — не «статические исполняшки», а фронтенды над огромным слоем данных и скриптов. Вручную вытаскивать всё = практически пересобрать мини-Debian руками. 
 
-Вот что выдаст нам **strace**: запущенный внутри контейнера для  команды apt```
+Вот что выдаст нам **strace**: запущенный внутри контейнера для  команды apt
+```
 newfstatat(AT_FDCWD, "/etc/apt/apt.conf", 0x7ffc0bd03cb0, 0) = -1 ENOENT (No such file or directory)
 ioctl(0, TCGETS, {c_iflag=ICRNL|IXON, c_oflag=NL0|CR0|TAB0|BS0|VT0|FF0|OPOST|ONLCR, c_cflag=B38400|CS8|CREAD, c_lflag=ISIG|ICANON|ECHO|ECHOE|ECHOK|IEXTEN|ECHOCTL|ECHOKE, ...}) = 0
 newfstatat(AT_FDCWD, "/var/lib/dpkg/status", 0x7ffc0bd03c80, 0) = -1 ENOENT (No such file or directory)
@@ -55,7 +57,8 @@ write(2, "\n", 1
 )                       = 1
 close(3)                                = 0
 exit_group(100)                         = ?
-+++ exited with 100 +++   ```
++++ exited with 100 +++   
+```
 
 То есть у нас нет базы dpkg ракетов. Стоит ли говорить, что даже подброс этой базы не решит всех вопросов. Останутся ещё всякие **/etc/dpkg**, **/etc/os-release**, **/etc/debian_version** **gpg и его keyrings**... 
 
