@@ -1,0 +1,6 @@
+.env
+.git
+.dockerignore
+__pycache__/
+task7/iloverunc/rootfs/
+

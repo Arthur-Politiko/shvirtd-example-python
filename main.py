@@ -13,16 +13,18 @@ db_host = os.environ.get('DB_HOST', '127.0.0.1')
 db_user = os.environ.get('DB_USER', 'app')
 db_password = os.environ.get('DB_PASSWORD', 'very_strong')
 db_name = os.environ.get('DB_NAME', 'example')
+table_name = os.environ.get('TABLE_NAME', 'requests')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Код, который выполнится перед запуском приложения
     print("Приложение запускается...")
+    print(f"Переменные окружения \ndb_host: {db_host} \ndb_user: {db_user} \ndb_password: {db_password} \ndb_name: {db_name} \ntable_name: {table_name} ")
     try:
         with get_db_connection() as db:
             cursor = db.cursor()
             create_table_query = f"""
-            CREATE TABLE IF NOT EXISTS {db_name}.requests (
+            CREATE TABLE IF NOT EXISTS {db_name}.{table_name} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 request_date DATETIME,
                 request_ip VARCHAR(255)
@@ -30,7 +32,7 @@ async def lifespan(app: FastAPI):
             """
             cursor.execute(create_table_query)
             db.commit()
-            print("Соединение с БД установлено и таблица 'requests' готова к работе.")
+            print(f"Соединение с БД установлено и таблица '{table_name}' готова к работе.")
             cursor.close()
     except mysql.connector.Error as err:
         print(f"Ошибка при подключении к БД или создании таблицы: {err}")
@@ -83,7 +85,7 @@ def index(request: Request, ip_address: Optional[str] = Depends(get_client_ip)):
     try:
         with get_db_connection() as db:
             cursor = db.cursor()
-            query = "INSERT INTO requests (request_date, request_ip) VALUES (%s, %s)"
+            query = f"INSERT INTO {table_name} (request_date, request_ip) VALUES (%s, %s)"
             values = (current_time, final_ip)
             cursor.execute(query, values)
             db.commit()
@@ -116,11 +118,11 @@ def debug_headers(request: Request):
 # --- 6. Эндпоинт для просмотра записей в БД ---
 @app.get("/requests")
 def get_requests():
-    """Возвращает все записи из таблицы requests для проверки"""
+    f"""Возвращает все записи из таблицы {table_name} для проверки"""
     try:
         with get_db_connection() as db:
             cursor = db.cursor()
-            query = "SELECT id, request_date, request_ip FROM requests ORDER BY id DESC LIMIT 50"
+            query = f"SELECT id, request_date, request_ip FROM {table_name} ORDER BY id DESC LIMIT 50"
             cursor.execute(query)
             records = cursor.fetchall()
             cursor.close()
