@@ -105,10 +105,6 @@ runc list
 runc exec task7-container bash
 ```
 
-Полезные материалы:
-
-- https://blog.quarkslab.com/digging-into-runtimes-runc.html
-- https://habr.com/ru/companies/selectel/articles/316258/
 
 ### Сетевая изоляция: veth + namespace
 
@@ -195,10 +191,15 @@ curl 127.0.0.1:8090
 ```json
 "process": {  
 	"args": [
-			"uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload""sleep", "infinity
+			"uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"
 		]
 }
 ```
 
-
 ![its work](./img/5.7.png)
+
+
+Полезные материалы:
+
+- https://blog.quarkslab.com/digging-into-runtimes-runc.html
+- https://habr.com/ru/companies/selectel/articles/316258/
